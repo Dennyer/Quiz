@@ -1,0 +1,79 @@
+[
+  {
+    "Question": "Example question with multiple options:",
+    "Answers": [
+      {
+        "text": "Correct 1",
+        "isTrue": true
+      },
+      {
+        "text": "Wrong 1",
+        "isTrue": false
+      },
+      {
+        "text": "Correct 2",
+        "isTrue": true
+      },
+      {
+        "text": "Wrong 2",
+        "isTrue": false
+      }
+    ]
+  },
+  {
+    "Question": "Example question:",
+    "Answers": [
+      {
+        "text": "Question 1",
+        "Options": [
+          {
+            "text": "Correct 1 option",
+            "isTrue": true
+          },
+          {
+            "text": "Wrong 1 option",
+            "isTrue": false
+          },
+          {
+            "text": "Wrong 1 option",
+            "isTrue": false
+          }
+        ]
+      },
+      {
+        "text": "Question 2",
+        "Options": [
+          {
+            "text": "Correct 2 option",
+            "isTrue": true
+          },
+          {
+            "text": "Wrong 2 option",
+            "isTrue": false
+          },
+          {
+            "text": "Wrong 2 option",
+            "isTrue": false
+          }
+        ]
+      },
+      {
+        "text": "Question 3",
+        "Options": [
+          {
+            "text": "Correct 3 option",
+            "isTrue": true
+          },
+          {
+            "text": "Wrong 3 option",
+            "isTrue": false
+          },
+          {
+            "text": "Wrong 3 option",
+            "isTrue": false
+          }
+        ]
+      }
+    ]
+  }
+]
