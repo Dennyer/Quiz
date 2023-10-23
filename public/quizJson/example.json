@@ -1,14 +1,34 @@
 [
   {
-    "Question": "Example question with multiple options:",
+    "Question": "Example question with one correct option:",
+    "isSingleChoice": true,
+    "Answers": [
+      {
+        "text": "Correct",
+        "isTrue": true
+      },
+      {
+        "text": "Wrong 1",
+        "isTrue": false
+      },
+      {
+        "text": "Wrong 2"
+      },
+      {
+        "text": "Wrong 3"
+      }
+    ]
+  },
+  {
+    "Question": "Example question with multiple correct options:",
+    "isSingleChoice": false,
     "Answers": [
       {
         "text": "Correct 1",
         "isTrue": true
       },
       {
-        "text": "Wrong 1",
-        "isTrue": false
+        "text": "Wrong 1"
       },
       {
         "text": "Correct 2",
@@ -21,21 +41,20 @@
     ]
   },
   {
-    "Question": "Example question:",
+    "Question": "Example question with sub-questions:",
     "Answers": [
       {
         "text": "Question 1",
         "Options": [
           {
-            "text": "Correct 1 option",
+            "text": "Correct option",
             "isTrue": true
           },
           {
-            "text": "Wrong 1 option",
-            "isTrue": false
+            "text": "Wrong option 1"
           },
           {
-            "text": "Wrong 1 option",
+            "text": "Wrong option 2",
             "isTrue": false
           }
         ]
@@ -44,16 +63,14 @@
         "text": "Question 2",
         "Options": [
           {
-            "text": "Correct 2 option",
+            "text": "Correct option",
             "isTrue": true
           },
           {
-            "text": "Wrong 2 option",
-            "isTrue": false
+            "text": "Wrong option 1"
           },
           {
-            "text": "Wrong 2 option",
-            "isTrue": false
+            "text": "Wrong option 2"
           }
         ]
       },
@@ -65,11 +82,11 @@
             "isTrue": true
           },
           {
-            "text": "Wrong 3 option",
+            "text": "Wrong option 1",
             "isTrue": false
           },
           {
-            "text": "Wrong 3 option",
+            "text": "Wrong option 2",
             "isTrue": false
           }
         ]

@@ -11,6 +11,7 @@ import LoadingSpinner from "../LoadingSpinner";
 import "tailwindcss/tailwind.css";
 import "react-notifications/lib/notifications.css";
 
+// Shuffles the array in place using Fisher-Yates algorithm
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -28,22 +29,27 @@ export default function Question() {
     random: shouldRandomize,
     challenge: shouldChallenge,
   } = router.query;
+
+  // State for storing the fetched quiz data
   const [data, setData] = useState(null);
+  // State to manage loading state
   const [loading, setLoading] = useState(true);
 
+  // 
   useEffect(() => {
+
+    // Async function to fetch quiz data from specified JSON file
     const fetchData = async () => {
       if (!router.isReady) return;
 
+      const quizName = id[0];
+
       if (id.length === 1) {
-        const quizName = id[0];
         router.push(
           `/quiz/${quizName}/1?shuffle=false&random=false&challenge=false`
         );
         return;
       }
-
-      const quizName = id[0];
 
       try {
         const quizData = await import(
@@ -53,6 +59,10 @@ export default function Question() {
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
+        router.push(
+          `/`
+        );
+        return;
       }
     };
     fetchData();
@@ -62,15 +72,25 @@ export default function Question() {
   shouldRandomize = shouldRandomize ? shouldRandomize : false;
   shouldChallenge = shouldChallenge ? shouldChallenge : false;
 
+  // State to manage randomized quiz data
   const [randomizedData, setRandomizedData] = useState(null);
+  // id[1] is the question number
   const question = randomizedData ? randomizedData[parseInt(id[1]) - 1] : null;
 
+  // State to manage user's answer selections
   const [selected, setSelected] = useState([]);
+  // State to manage user's answer selections with radio buttons
+  const [radioSelected, setRadioSelected] = useState(null);
+  // State to manage whether answers have been submitted
   const [submitted, setSubmitted] = useState(false);
+  // State to manage the correctness of the answer
   const [isCorrect, setIsCorrect] = useState(null);
+  // State to manage shuffled answer options
   const [shuffledAnswers, setShuffledAnswers] = useState([]);
+  // State to manage user's status in challenge mode
   const [userLost, setUserLost] = useState(false);
 
+  // Sets the randomized data based on the shouldRandomize boolean flag
   useEffect(() => {
     if (loading) return;
 
@@ -81,19 +101,49 @@ export default function Question() {
     }
   }, [shouldRandomize, loading]);
 
+  // Shuffles the answer options or resets related states when a new question appears
   useEffect(() => {
     if (loading) return;
 
     setSelected([]);
     setSubmitted(false);
     setIsCorrect(null);
-    if (shouldShuffle === "true" && question) {
-      setShuffledAnswers(shuffle([...question.Answers]));
-    } else if (question) {
-      setShuffledAnswers([...question.Answers]);
+
+    if (question) {
+
+      question.isSingleChoice = question.hasOwnProperty('isSingleChoice') ? question.isSingleChoice : false;
+
+      const modifiedAnswers = question.Answers.map((answer) => {
+        if (Array.isArray(answer.Options)) {
+          const modifiedOptions = answer.Options.map((option) => {
+            return {
+              ...option,
+              isTrue: option.hasOwnProperty('isTrue') ? option.isTrue : false,
+            };
+          });
+
+          return {
+            ...answer,
+            Options: modifiedOptions,
+          };
+        } else {
+          return {
+            ...answer,
+            isTrue: answer.hasOwnProperty('isTrue') ? answer.isTrue : false,
+          };
+        }
+      });
+
+      if (shouldShuffle === "true") {
+        setShuffledAnswers(shuffle([...modifiedAnswers]));
+      } else {
+        setShuffledAnswers([...modifiedAnswers]);
+      }
     }
   }, [id, question, shouldShuffle, loading]);
 
+  // Toggles the selection status of an answer given the index
+  // This is used for checkboxes
   const toggleSelected = (index) => {
     setSelected((prevSelected) =>
       prevSelected.includes(index)
@@ -102,6 +152,13 @@ export default function Question() {
     );
   };
 
+  // Changes the selection status of an answer given the index
+  // This is used for radio buttons
+  const handleRadioChange = (index) => {
+    setRadioSelected(index);
+  };
+
+  // Handles changes in dropdown selection
   const handleDropdownChange = (answerIndex, optionIndex) => {
     setSelected((prevSelected) => {
       const newSelection = [...prevSelected];
@@ -110,6 +167,7 @@ export default function Question() {
     });
   };
 
+  // Handles the submission of answers
   const handleSubmit = () => {
     setSubmitted(true);
 
@@ -122,10 +180,22 @@ export default function Question() {
 
     shuffledAnswers.forEach((answer, index) => {
       if (skip) return;
-      if (answer.Options) {
-        console.log(answer);
-        console.log(selected);
-        console.log(index);
+      if (question.isSingleChoice) {
+        if (
+          radioSelected == -1 ||
+          radioSelected == null
+        ) {
+          alert("Please select an option");
+          skip = true;
+          return;
+        }
+
+        if (index == radioSelected && answer.isTrue === true) correctSelected++;
+        if (index == radioSelected && answer.isTrue === "maybe") maybeSelected++;
+        if (answer.isTrue === true) totalCorrect++;
+        if (answer.isTrue === "maybe") totalMaybe++;
+
+      } else if (answer.Options) {
 
         if (
           selected[index] == -1 ||
@@ -201,6 +271,7 @@ export default function Question() {
     }
   };
 
+  // Handles navigating to the next question
   const handleNext = () => {
     // Reset state
     setSelected([]);
@@ -221,6 +292,7 @@ export default function Question() {
     }
   };
 
+  // Handles navigating to the previous question
   const handlePrevious = () => {
     // Reset state
     setSelected([]);
@@ -288,32 +360,66 @@ export default function Question() {
                         </select>
                       </>
                     ) : (
-                      <label
-                        className={`my-2 block p-4 ${
-                          submitted
-                            ? selected.includes(index)
-                              ? answer.isTrue === true
-                                ? "bg-green-300"
-                                : answer.isTrue === "maybe"
-                                ? "bg-yellow-200"
-                                : "bg-red-300"
-                              : answer.isTrue === true ||
-                                answer.isTrue === "maybe"
-                              ? "bg-red-300"
+                      <>
+                        {question.isSingleChoice ? (
+                          <label
+                            className={`my-2 block p-4 ${submitted
+                              ? index == radioSelected
+                                ? answer.isTrue === true
+                                  ? "bg-green-300"
+                                  : answer.isTrue === "maybe"
+                                    ? "bg-yellow-200"
+                                    : "bg-red-300"
+                                : answer.isTrue === true ||
+                                  answer.isTrue === "maybe"
+                                  ? "bg-red-300"
+                                  : ""
                               : ""
-                            : ""
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          onChange={() => toggleSelected(index)}
-                          disabled={submitted}
-                          className="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 accent-darkmode-800 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-darkmode-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
-                        />
-                        <span className="ml-2 w-full py-4 text-sm font-medium">
-                          {answer.text}
-                        </span>
-                      </label>
+                              }`}
+                          >
+                            <input
+                              type="radio"
+                              name="singleChoice"
+                              checked={radioSelected === index}
+                              onChange={() => handleRadioChange(index)}
+                              disabled={submitted}
+                              className="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 accent-darkmode-800 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-darkmode-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+                            />
+
+                            <span className="ml-2 w-full py-4 text-sm font-medium">
+                              {answer.text}
+                            </span>
+                          </label>
+                        ) : (
+                          <label
+                            className={`my-2 block p-4 ${submitted
+                              ? selected.includes(index)
+                                ? answer.isTrue === true
+                                  ? "bg-green-300"
+                                  : answer.isTrue === "maybe"
+                                    ? "bg-yellow-200"
+                                    : "bg-red-300"
+                                : answer.isTrue === true ||
+                                  answer.isTrue === "maybe"
+                                  ? "bg-red-300"
+                                  : ""
+                              : ""
+                              }`}
+                          >
+                            <input
+                              type="checkbox"
+                              onChange={() => toggleSelected(index)}
+                              disabled={submitted}
+                              className="h-4 w-4 rounded border-gray-300 bg-gray-100 text-blue-600 accent-darkmode-800 focus:ring-2 focus:ring-blue-500 dark:border-gray-600 dark:bg-darkmode-700 dark:ring-offset-gray-800 dark:focus:ring-blue-600"
+                            />
+
+                            <span className="ml-2 w-full py-4 text-sm font-medium">
+                              {answer.text}
+                            </span>
+                          </label>
+                        )}
+
+                      </>
                     )}
                   </li>
                 ))}
@@ -327,22 +433,20 @@ export default function Question() {
                   Previous
                 </button>
                 <button
-                  className={`ml-4 rounded px-4 py-2 text-white ${
-                    submitted
-                      ? "bg-gray-500 dark:bg-gray-700"
-                      : "bg-blue-600 dark:bg-blue-700"
-                  }`}
+                  className={`ml-4 rounded px-4 py-2 text-white ${submitted
+                    ? "bg-gray-500 dark:bg-gray-700"
+                    : "bg-blue-600 dark:bg-blue-700"
+                    }`}
                   onClick={handleSubmit}
                   disabled={submitted}
                 >
                   Confirm
                 </button>
                 <button
-                  className={`ml-4 rounded px-4 py-2 text-white ${
-                    submitted
-                      ? "bg-blue-600 dark:bg-blue-700"
-                      : "bg-gray-500 dark:bg-gray-700"
-                  }`}
+                  className={`ml-4 rounded px-4 py-2 text-white ${submitted
+                    ? "bg-blue-600 dark:bg-blue-700"
+                    : "bg-gray-500 dark:bg-gray-700"
+                    }`}
                   onClick={handleNext}
                   disabled={!submitted}
                 >
