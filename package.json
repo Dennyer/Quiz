@@ -9,13 +9,19 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "canvas": "^2.11.2",
+    "dompurify": "^3.0.6",
+    "jsdom": "^22.1.0",
+    "net": "^1.0.2",
     "next": "13.4.5",
     "next-themes": "^0.2.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-icons": "^4.9.0",
     "react-loading": "^2.0.3",
-    "react-notifications": "^1.7.4"
+    "react-notifications": "^1.7.4",
+    "tls": "^0.0.1",
+    "xss": "^1.0.14"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.14",

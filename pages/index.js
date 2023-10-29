@@ -3,8 +3,6 @@ import { useRouter } from "next/router";
 
 import Index from "../components/quiz/Index";
 
-import Image from "next/image";
-
 import "tailwindcss/tailwind.css";
 
 export default function Home() {
